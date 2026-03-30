@@ -1,6 +1,7 @@
 # AI Expense Tracker
 
 A full end-to-end **Flask + Bootstrap + OpenAI + SQLite** project you can run in **VSCode**.
+<img width="2084" height="1303" alt="Screenshot (414)" src="https://github.com/user-attachments/assets/39aea138-88d2-426d-9aa1-09d7166b77a7" />
 
 ## Features
 - User registration and login
