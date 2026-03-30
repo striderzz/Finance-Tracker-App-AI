@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <p class="eyebrow mb-2">Personal Finance Dashboard</p>
+        <h2 class="fw-bold mb-1">Welcome, {{ current_user.name }}</h2>
+        <p class="text-secondary mb-0">Track your money for {{ today.strftime('%B %Y') }}.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('add_expense') }}" class="btn btn-dark rounded-pill px-4">+ Add Expense</a>
+        <a href="{{ url_for('database_view') }}" class="btn btn-outline-dark rounded-pill px-4">View Database</a>
+        <a href="{{ url_for('insights') }}" class="btn btn-outline-dark rounded-pill px-4">AI Insights</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card metric-card p-4 bg-white h-100">
+            <div class="text-secondary small text-uppercase fw-semibold">This Month Spent</div>
+            <div class="metric-value">${{ '%.2f'|format(total_spent) }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card metric-card p-4 bg-white h-100 budget-edit-card" id="budget-card">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                <div>
+                    <div class="text-secondary small text-uppercase fw-semibold">Monthly Budget</div>
+                    <div class="metric-value" id="budgetDisplay">${{ '%.2f'|format(budget) }}</div>
+                </div>
+                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill px-3" id="editBudgetBtn">Edit</button>
+            </div>
+
+            <form action="{{ url_for('update_budget') }}" method="POST" class="mt-3 d-none" id="budgetEditForm">
+                <label class="form-label fw-medium mb-2">Edit Monthly Budget</label>
+                <div class="input-group input-group-lg budget-input-group">
+                    <span class="input-group-text">$</span>
+                    <input
+                        type="text"
+                        name="monthly_budget"
+                        id="budgetInput"
+                        class="form-control"
+                        value="{{ '%.2f'|format(budget) }}"
+                        placeholder="2500.00"
+                        inputmode="decimal"
+                        required
+                    >
+                </div>
+                <div class="form-text">Type a new amount and save. You can enter values like 2500, 2500.75, or $2,500.</div>
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-dark rounded-pill px-4" type="submit">Save Budget</button>
+                    <button class="btn btn-outline-secondary rounded-pill px-4" type="button" id="cancelBudgetBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card metric-card p-4 bg-white h-100">
+            <div class="text-secondary small text-uppercase fw-semibold">Budget Remaining</div>
+            <div class="metric-value {% if remaining_budget < 0 %}text-danger{% else %}text-success{% endif %}">
+                ${{ '%.2f'|format(remaining_budget) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-8">
+        <div class="card table-card p-4 bg-white h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <h4 class="fw-semibold mb-1">Recent Expenses</h4>
+                    <p class="text-secondary small mb-0">Latest 20 rows from your saved expense database</p>
+                </div>
+                <span class="badge badge-soft rounded-pill">Live from SQLite</span>
+            </div>
+            {% if all_expenses %}
+            <div class="table-responsive">
+                <table class="table align-middle modern-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in all_expenses %}
+                        <tr>
+                            <td class="text-muted">#{{ expense.id }}</td>
+                            <td>{{ expense.expense_date.strftime('%Y-%m-%d') }}</td>
+                            <td class="fw-medium">{{ expense.description }}</td>
+                            <td><span class="badge text-bg-light rounded-pill px-3 py-2">{{ expense.category }}</span></td>
+                            <td class="fw-semibold">${{ '%.2f'|format(expense.amount) }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-dark rounded-pill px-3" href="{{ url_for('edit_expense', expense_id=expense.id) }}">Edit</a>
+                                <form action="{{ url_for('delete_expense', expense_id=expense.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Delete this expense?')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-secondary mb-0">No expenses added yet. Start by adding your first expense.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card panel-card p-4 bg-white mb-4">
+            <h4 class="fw-semibold">Quick Summary</h4>
+            <ul class="mt-3 mb-0 summary-list">
+                <li>{{ month_expenses|length }} expenses recorded this month</li>
+                <li>Database rows update the charts automatically</li>
+                <li>Leave category blank to let AI auto-classify an expense</li>
+                <li>Use the Database tab to inspect saved rows</li>
+            </ul>
+        </div>
+        <div class="card panel-card p-4 bg-white">
+            <h4 class="fw-semibold mb-3">Budget Status</h4>
+            <div class="small text-secondary mb-2">Current monthly budget</div>
+            <div class="fs-3 fw-bold mb-3">${{ '%.2f'|format(budget) }}</div>
+            <div class="small text-secondary mb-2">Current month spent</div>
+            <div class="fs-5 fw-semibold mb-0">${{ '%.2f'|format(total_spent) }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card panel-card p-4 bg-white">
+            <h4 class="fw-semibold mb-3">Spending by Category</h4>
+            <div class="chart-box">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card panel-card p-4 bg-white h-100">
+            <h4 class="fw-semibold mb-3">Budget Usage</h4>
+            <div class="chart-box chart-box-sm">
+                <canvas id="budgetChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card panel-card p-4 bg-white h-100">
+            <h4 class="fw-semibold mb-3">Last 7 Days Spend</h4>
+            <div class="chart-box chart-box-sm">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const categoryLabels = {{ category_labels|safe }};
+const categoryValues = {{ category_values|safe }};
+const trendLabels = {{ trend_labels|safe }};
+const trendValues = {{ trend_values|safe }};
+const budgetChartLabels = {{ budget_chart_labels|safe }};
+const budgetChartValues = {{ budget_chart_values|safe }};
+
+const editBudgetBtn = document.getElementById('editBudgetBtn');
+const cancelBudgetBtn = document.getElementById('cancelBudgetBtn');
+const budgetEditForm = document.getElementById('budgetEditForm');
+const budgetDisplay = document.getElementById('budgetDisplay');
+const budgetInput = document.getElementById('budgetInput');
+
+if (editBudgetBtn && budgetEditForm && budgetDisplay && budgetInput) {
+    editBudgetBtn.addEventListener('click', function () {
+        budgetEditForm.classList.remove('d-none');
+        budgetDisplay.parentElement.classList.add('d-none');
+        editBudgetBtn.classList.add('d-none');
+        budgetInput.focus();
+        budgetInput.select();
+    });
+}
+
+if (cancelBudgetBtn && budgetEditForm && budgetDisplay && editBudgetBtn) {
+    cancelBudgetBtn.addEventListener('click', function () {
+        budgetEditForm.classList.add('d-none');
+        budgetDisplay.parentElement.classList.remove('d-none');
+        editBudgetBtn.classList.remove('d-none');
+    });
+}
+
+if (categoryLabels.length) {
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'doughnut',
+        data: {
+            labels: categoryLabels,
+            datasets: [{ data: categoryValues, borderWidth: 0 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+new Chart(document.getElementById('budgetChart'), {
+    type: 'pie',
+    data: {
+        labels: budgetChartLabels,
+        datasets: [{ data: budgetChartValues, borderWidth: 0 }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+
+new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: {
+        labels: trendLabels,
+        datasets: [{ label: 'Spend ($)', data: trendValues, borderRadius: 8 }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+</script>
+{% endblock %}

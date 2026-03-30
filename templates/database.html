@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Database View{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <p class="eyebrow mb-2">SQLite Database Viewer</p>
+        <h2 class="fw-bold mb-1">Your Saved Database Rows</h2>
+        <p class="text-secondary mb-0">Inspect the exact rows currently stored for your account.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('add_expense') }}" class="btn btn-dark rounded-pill px-4">+ Add Expense</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-dark rounded-pill px-4">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card metric-card p-4 bg-white h-100">
+            <div class="text-secondary small text-uppercase fw-semibold">Total Rows</div>
+            <div class="metric-value">{{ total_records }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card metric-card p-4 bg-white h-100">
+            <div class="text-secondary small text-uppercase fw-semibold">Total Amount</div>
+            <div class="metric-value">${{ '%.2f'|format(total_amount) }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card metric-card p-4 bg-white h-100">
+            <div class="text-secondary small text-uppercase fw-semibold">Current Budget</div>
+            <div class="metric-value">${{ '%.2f'|format(current_user.monthly_budget or 0) }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card table-card p-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-semibold mb-1">Expense Table</h4>
+            <p class="text-secondary small mb-0">Columns shown below come directly from the Expense model.</p>
+        </div>
+        <input type="text" id="expenseSearch" class="form-control search-input" placeholder="Filter by description or category...">
+    </div>
+
+    {% if expenses %}
+    <div class="table-responsive database-scroll">
+        <table class="table align-middle modern-table" id="databaseTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User ID</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td class="text-muted">#{{ expense.id }}</td>
+                    <td>{{ expense.user_id }}</td>
+                    <td>{{ expense.expense_date.strftime('%Y-%m-%d') }}</td>
+                    <td class="fw-medium">{{ expense.description }}</td>
+                    <td>{{ expense.category }}</td>
+                    <td class="fw-semibold">${{ '%.2f'|format(expense.amount) }}</td>
+                    <td>{{ expense.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="text-secondary mb-0">No expense rows yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const searchInput = document.getElementById('expenseSearch');
+const rows = document.querySelectorAll('#databaseTable tbody tr');
+
+if (searchInput) {
+    searchInput.addEventListener('input', function () {
+        const query = this.value.toLowerCase().trim();
+        rows.forEach((row) => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
+    });
+}
+</script>
+{% endblock %}

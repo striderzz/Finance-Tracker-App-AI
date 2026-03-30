@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}AI Insights{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <p class="eyebrow mb-2">OpenAI + Analytics</p>
+        <h2 class="fw-bold mb-1">AI Spending Insights</h2>
+        <p class="text-secondary mb-0">Generated from your latest saved expenses and shown with pie charts.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('database_view') }}" class="btn btn-outline-dark rounded-pill px-4">View Database</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-dark rounded-pill px-4">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card panel-card bg-white p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-semibold mb-0">Category Pie Chart</h4>
+                <span class="badge badge-soft rounded-pill">From database</span>
+            </div>
+            <div class="chart-box">
+                <canvas id="insightCategoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card panel-card bg-white p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-semibold mb-0">Budget vs Spend</h4>
+                <span class="badge badge-soft rounded-pill">Current snapshot</span>
+            </div>
+            <div class="chart-box">
+                <canvas id="insightBudgetChart"></canvas>
+            </div>
+            <div class="mt-3 d-flex flex-wrap gap-3 small text-secondary">
+                <span><strong class="text-dark">Spent:</strong> ${{ '%.2f'|format(total_spent) }}</span>
+                <span><strong class="text-dark">Budget:</strong> ${{ '%.2f'|format(budget) }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card insight-card bg-white p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-semibold mb-0">AI Analysis</h4>
+                <span class="badge badge-soft rounded-pill">OpenAI</span>
+            </div>
+            {% if ai_response %}
+                <div id="markdown-output" class="markdown-output"></div>
+                <script id="ai-markdown" type="text/plain">{{ ai_response }}</script>
+            {% else %}
+                <div class="alert alert-warning mb-0">{{ error_message }}</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card table-card bg-white p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h4 class="fw-semibold mb-0">Expense Rows Used for AI</h4>
+                <span class="badge badge-soft rounded-pill">{{ expenses|length }} rows</span>
+            </div>
+            {% if expenses %}
+            <div class="table-responsive database-scroll">
+                <table class="table align-middle modern-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses %}
+                        <tr>
+                            <td class="text-muted">#{{ expense.id }}</td>
+                            <td>{{ expense.expense_date.strftime('%Y-%m-%d') }}</td>
+                            <td class="fw-medium">{{ expense.description }}</td>
+                            <td>{{ expense.category }}</td>
+                            <td class="fw-semibold">${{ '%.2f'|format(expense.amount) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-secondary mb-0">No expenses available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const markdownElement = document.getElementById('ai-markdown');
+if (markdownElement) {
+    const rawMarkdown = markdownElement.textContent;
+    document.getElementById('markdown-output').innerHTML = marked.parse(rawMarkdown);
+}
+
+const insightCategoryLabels = {{ chart_category_labels|safe }};
+const insightCategoryValues = {{ chart_category_values|safe }};
+const insightBudgetLabels = {{ budget_chart_labels|safe }};
+const insightBudgetValues = {{ budget_chart_values|safe }};
+
+new Chart(document.getElementById('insightCategoryChart'), {
+    type: 'pie',
+    data: {
+        labels: insightCategoryLabels,
+        datasets: [{ data: insightCategoryValues, borderWidth: 0 }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+
+new Chart(document.getElementById('insightBudgetChart'), {
+    type: 'doughnut',
+    data: {
+        labels: insightBudgetLabels,
+        datasets: [{ data: insightBudgetValues, borderWidth: 0 }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+</script>
+{% endblock %}

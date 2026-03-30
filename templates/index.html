@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Welcome | AI Expense Tracker{% endblock %}
+{% block content %}
+<div class="row justify-content-center align-items-center g-4 mt-2">
+    <div class="col-lg-7">
+        <div class="card hero-card p-4 p-md-5 bg-white">
+            <span class="badge text-bg-dark mb-3 w-auto rounded-pill px-3 py-2">Flask + Bootstrap + OpenAI + SQLite</span>
+            <h1 class="display-5 fw-bold">Track expenses, inspect database rows, and get AI-powered money insights.</h1>
+            <p class="lead text-secondary mt-3 mb-0">
+                A complete full-stack expense tracker with authentication, expense CRUD, an interactive dashboard,
+                database viewer, charts, and optional OpenAI analysis for smarter financial decisions.
+            </p>
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <a href="{{ url_for('register') }}" class="btn btn-dark btn-lg rounded-pill px-4">Create Account</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-dark btn-lg rounded-pill px-4">Login</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card panel-card p-4 bg-white">
+            <h4 class="fw-semibold">What this project includes</h4>
+            <ul class="mt-3 mb-0 summary-list">
+                <li>Secure user signup and login</li>
+                <li>Expense CRUD with categories and dates</li>
+                <li>Monthly budget tracking</li>
+                <li>Database table viewer for saved rows</li>
+                <li>Category and budget pie charts</li>
+                <li>AI-generated financial recommendations</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

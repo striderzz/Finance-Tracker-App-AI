@@ -1,0 +1,158 @@
+:root {
+    --bg: #f5f7fb;
+    --text: #111827;
+    --muted: #6b7280;
+    --card: #ffffff;
+    --border: #e5e7eb;
+}
+
+body {
+    background: radial-gradient(circle at top, #ffffff 0%, #f5f7fb 50%, #eff3f9 100%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.01em;
+}
+
+.hero-card,
+.panel-card,
+.table-card,
+.form-card,
+.insight-card,
+.metric-card {
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 1.35rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.shadow-soft-sm {
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+.navbar-brand {
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+.eyebrow {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #64748b;
+}
+
+.metric-value {
+    margin-top: 0.35rem;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.chart-box {
+    position: relative;
+    min-height: 320px;
+}
+
+.chart-box-sm {
+    min-height: 260px;
+}
+
+.badge-soft {
+    background: #eef2ff;
+    color: #312e81;
+    font-weight: 600;
+}
+
+.form-control,
+.form-select {
+    border-radius: 0.9rem;
+    border: 1px solid var(--border);
+    padding: 0.85rem 1rem;
+    box-shadow: none;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #111827;
+    box-shadow: 0 0 0 0.2rem rgba(17, 24, 39, 0.08);
+}
+
+.btn {
+    font-weight: 600;
+}
+
+.modern-table thead th {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    border-bottom-color: #e5e7eb;
+}
+
+.modern-table tbody tr:hover {
+    background: #fafcff;
+}
+
+.modern-table td,
+.modern-table th {
+    vertical-align: middle;
+    padding-top: 0.95rem;
+    padding-bottom: 0.95rem;
+}
+
+.summary-list li {
+    margin-bottom: 0.6rem;
+}
+
+.markdown-output h1,
+.markdown-output h2,
+.markdown-output h3,
+.markdown-output h4 {
+    margin-top: 1rem;
+    margin-bottom: 0.65rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.markdown-output ul {
+    padding-left: 1.2rem;
+}
+
+.database-scroll {
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+.search-input {
+    max-width: 300px;
+    border-radius: 999px;
+}
+
+@media (max-width: 991px) {
+    .metric-value {
+        font-size: 1.65rem;
+    }
+
+    .chart-box,
+    .chart-box-sm {
+        min-height: 260px;
+    }
+}
+
+
+.budget-edit-card .input-group-text {
+    border-radius: 0.9rem 0 0 0.9rem;
+    border: 1px solid var(--border);
+    border-right: 0;
+    background: #fff;
+}
+
+.budget-edit-card .input-group .form-control {
+    border-radius: 0 0.9rem 0.9rem 0;
+}
